@@ -1,7 +1,24 @@
+use clap::Parser;
+
+#[derive(Parser)]
+struct Cli {
+    accel_factor: f64,
+
+    /// Max gain
+    cap: f64,
+
+    #[clap(default_value = "1")]
+    step: f64,
+
+    #[clap(short)]
+    quiet: bool,
+}
+
 fn main() {
-    let accel_factor = 0.7f64;
-    let max_gain = 2f64;
-    let step = 0.1f64;
+    let cli = Cli::parse();
+    let accel_factor = cli.accel_factor;
+    let max_gain = cli.cap;
+    let step = cli.step;
 
     let sample_sequence = 0..64u64;
 
@@ -11,7 +28,7 @@ fn main() {
         let gain = x * accel_factor + 1f64;
         let mut y = x * gain;
         if gain >= max_gain {
-            if !hit_max_gain {
+            if !hit_max_gain && !cli.quiet {
                 eprintln!("gain reached {} at ({x}, {y})", gain);
             };
             hit_max_gain = true;
@@ -20,13 +37,15 @@ fn main() {
         return (x, y);
     });
 
-    eprintln!("coordinates: ");
-    coordinates
-        .clone()
-        .for_each(|(x, y)| eprint!("({x}, {y}), "));
+    if !cli.quiet {
+        eprintln!("coordinates: ");
+        coordinates
+            .clone()
+            .for_each(|(x, y)| eprint!("({x}, {y}), "));
 
-    eprintln!();
-    eprintln!();
+        eprintln!();
+        eprintln!();
+    }
 
     coordinates.for_each(|(_, y)| print!("{y} "));
 }
