@@ -22,16 +22,10 @@ fn main() {
 
     let sample_sequence = 0..64u64;
 
-    let mut hit_max_gain = false;
-
     let coordinates = sample_sequence.map(|x| x as f64 * step).map(move |x| {
         let gain = x * accel_factor + 1f64;
         let mut y = x * gain;
         if gain >= max_gain {
-            if !hit_max_gain && !cli.quiet {
-                eprintln!("gain reached {} at ({x}, {y})", gain);
-            };
-            hit_max_gain = true;
             y = max_gain * x
         };
         return (x, y);
