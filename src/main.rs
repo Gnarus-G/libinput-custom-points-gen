@@ -1,3 +1,5 @@
+use core::f64;
+
 use clap::Parser;
 
 #[derive(Parser)]
@@ -27,9 +29,9 @@ fn main() {
     let max_gain = cli.cap;
     let step = cli.step;
 
-    let sample_sequence = 0..64u64;
+    let input_speeds = 0..64u64;
 
-    let coordinates = sample_sequence.map(|x| x as f64 * step).map(move |x| {
+    let coordinates = input_speeds.map(|x| x as f64 * step).map(move |x| {
         let gain = x * accel_factor + 1f64;
         let mut y = x * gain;
         if gain >= max_gain {
@@ -38,9 +40,11 @@ fn main() {
         return (x, y);
     });
 
+    // applying any input offset so that the acceleration curve is flat
+    // during the offset (x <= offset) and then is the function above when x > offset
     let coordinates = (0..cli.input_offset)
-        .map(|x| (x as f64, 0f64))
-        .chain(coordinates)
+        .map(|x| (x as f64, x as f64))
+        .chain(coordinates.map(|(x, y)| (x + cli.input_offset as f64, y + cli.input_offset as f64)))
         .take(64);
 
     if !cli.quiet {
