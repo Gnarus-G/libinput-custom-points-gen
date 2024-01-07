@@ -7,7 +7,10 @@ struct Cli {
     /// Max gain
     cap: f64,
 
-    #[clap(default_value = "1")]
+    #[clap(default_value = "0")]
+    input_offset: u64,
+
+    #[clap(short, default_value = "1")]
     step: f64,
 
     #[clap(short)]
@@ -30,6 +33,11 @@ fn main() {
         };
         return (x, y);
     });
+
+    let coordinates = (0..cli.input_offset)
+        .map(|x| (x as f64, 0f64))
+        .chain(coordinates)
+        .take(64);
 
     if !cli.quiet {
         eprintln!("coordinates: ");
