@@ -13,6 +13,10 @@ struct Cli {
     #[clap(short, default_value = "1")]
     step: f64,
 
+    /// Print an xorg .conf configuring libinput accel settings.
+    #[clap(short = 'x', long)]
+    print_xorg_conf: bool,
+
     #[clap(short)]
     quiet: bool,
 }
@@ -49,5 +53,26 @@ fn main() {
         eprintln!();
     }
 
-    coordinates.for_each(|(_, y)| print!("{y} "));
+    let motion_points = coordinates
+        .map(|(_, y)| format!("{}", y))
+        .collect::<Vec<_>>()
+        .join(" ");
+
+    if cli.print_xorg_conf {
+        println!(
+            r#"Section "InputClass"
+    Identifier "My Mouse"
+    Driver "libinput"
+    MatchIsPointer "yes"
+
+    Option "AccelProfile" "custom"
+    Option "AccelStepMotion" "{}"
+    Option "AccelPointsMotion" "{}"
+EndSection
+"#,
+            cli.step, motion_points
+        )
+    } else {
+        println!("{motion_points}");
+    }
 }
